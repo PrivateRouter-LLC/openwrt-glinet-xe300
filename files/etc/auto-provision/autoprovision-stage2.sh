@@ -4,6 +4,19 @@
 
 . /etc/auto-provision/autoprovision-functions.sh
 
+# Verify we are connected to the Internet
+is_connected() {
+    ping -q -c3 1.1.1.1 >/dev/null 2>&1
+    return $?
+}
+
+# Log to the system log and echo if needed
+log_say()
+{
+    echo "${1}"
+    logger "${1}"
+}
+
 installPackages()
 {
     signalAutoprovisionWaitingForUser
@@ -134,5 +147,12 @@ EOF
         reboot
     fi
 }
+
+# Check and wait for Internet connection
+while ! is_connected; do
+    log_say "Waiting for Internet connection..."
+    sleep 1
+done
+log_say "Internet connection established"
 
 autoprovisionStage2
