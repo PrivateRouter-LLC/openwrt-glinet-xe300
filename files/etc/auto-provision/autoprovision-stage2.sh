@@ -151,7 +151,10 @@ fixPackagesDNS()
     log_say "Fixing DNS and installing required packages for opkg"
     # Set our router's dns
     echo "nameserver 1.1.1.1" > /etc/resolv.conf
-    opkg update; opkg install unzip wget-ssl
+
+    log_say "Installing opkg packages"
+    opkg --no-check-certificate update
+    opkg --no-check-certificate install wget-ssl unzip ca-bundle ca-certificates
 }
 
 # Check and wait for Internet connection
