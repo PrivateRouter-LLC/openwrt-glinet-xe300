@@ -113,7 +113,7 @@ autoprovisionStage2()
         #/root/autoprovision-stage3.py
     else
         signalAutoprovisionWorking
-ping 19
+
 	echo Updating system time using ntp; otherwise the openwrt.org certificates are rejected as not yet valid.
         ntpd -d -q -n -p 0.openwrt.pool.ntp.org
 
