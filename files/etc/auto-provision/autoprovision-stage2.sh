@@ -88,8 +88,6 @@ installPackages()
    echo "Installing V2rayA..."
   ## download
 
-  opkg update; opkg install unzip wget-ssl
-
     ## Remove DNSMasq
 
   opkg remove dnsmasq
@@ -148,11 +146,21 @@ EOF
     fi
 }
 
+fixPackagesDNS()
+{
+    log_say "Fixing DNS and installing required packages for opkg"
+    # Set our router's dns
+    echo "nameserver 1.1.1.1" > /etc/resolv.conf
+    opkg update; opkg install unzip wget-ssl
+}
+
 # Check and wait for Internet connection
 while ! is_connected; do
     log_say "Waiting for Internet connection..."
     sleep 1
 done
 log_say "Internet connection established"
+
+fixPackagesDNS
 
 autoprovisionStage2
