@@ -1,6 +1,47 @@
 # Put your custom commands here that should be executed once
 # the system init finished. By default this file does nothing.
 
-/etc/auto-provision/autoprovision-stage1.sh
+get_mount_device() {
+    df -h | awk '$NF == "/overlay" { print $1 }'
+}
+
+EXTERNAL_DRIVE="/dev/sda1"
+
+# This is a protector for flashing an upgrade, it protects core system files being overwritten as a setup
+# This should only happen if flashed onto a system running from an external drive
+if [ -f /root/.stage3-done ] || [ "$overlay_mount_device" = "$EXTERNAL_DRIVE" ]; then
+    log_say "Setup has already been done, no need to change anything as this is probably an upgrade."
+    # Overwrite our setup rc.local with a clean one
+    if [ -f /pr-scripts/templates/rc.local.clean ]; then
+        cat </pr-scripts/templates/rc.local.clean >/etc/rc.local
+    else
+        # Just in case!
+        echo "" > /etc/rc.local
+    fi
+    exit 0
+fi
+
+# Source our reusable functions
+if [ -f /pr-scripts/functions.sh ]; then
+    . /pr-scripts/functions.sh
+else
+    echo "ERROR: /pr-scripts/functions.sh not found!"
+    exit 1
+fi
+
+DESTINATION_DRIVE=/dev/sda
+
+# If we have a valid drive for setup, we will always run the setup of a new drive
+#check_valid_drive "${DESTINATION_DRIVE}"
+#if [ $? -eq 0 ] || [ "$REPO" != "main" ]; then
+drive_is_big_enough "${DESTINATION_DRIVE}"
+if [ $? -eq 0 ]; then
+    sh /pr-scripts/auto-provision/stage1.sh
+else
+    set_led_working
+    log_say "We need our external drive to continue, sleeping 120 seconds then rebooting."
+    sleep 120
+    reboot
+fi
 
 exit 0
